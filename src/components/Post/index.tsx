@@ -4,9 +4,31 @@ import { Avatar } from '../Avatar'
 import { Comment } from '../Comment'
 import { format, formatDistanceToNow } from 'date-fns'
 import ptBR from 'date-fns/locale/pt-BR'
-import { useState } from 'react'
+import { ChangeEvent, FormEvent, InvalidEvent, useState } from 'react'
 
-export function Post({ post }) {
+interface Author {
+  name: string
+  avatarUrl: string
+  role: string
+}
+
+interface Content {
+  type: 'paragraph' | 'link'
+  content: string
+}
+
+export interface PostType {
+  id: number
+  author: Author
+  content: Content[]
+  publishedAt: Date
+}
+
+interface PostProps {
+  post: PostType
+}
+
+export function Post({ post }: PostProps) {
   const [comments, setComments] = useState([
     'Post muito bacana, hein?!',
   ])
@@ -21,7 +43,7 @@ export function Post({ post }) {
   const publishedDateFormatted = format(publishedAt, "d 'de' LLLL 'às' HH:mm'h'", { locale: ptBR })
   const publishDateRelativeToNow = formatDistanceToNow(publishedAt, { locale: ptBR, addSuffix: true })
 
-  function handleCreateNewComment() {
+  function handleCreateNewComment(event: FormEvent) {
     event.preventDefault()
 
     setComments([...comments, newCommentText])
@@ -29,16 +51,16 @@ export function Post({ post }) {
 
   }
 
-  function handleNewCommentChange() {
+  function handleNewCommentChange(event: ChangeEvent<HTMLTextAreaElement>) {
     event.target.setCustomValidity('')
     setNewCommentText(event.target.value)
   }
 
-  function handleNewCommentInvalid() {
+  function handleNewCommentInvalid(event: InvalidEvent<HTMLTextAreaElement>) {
     event.target.setCustomValidity('Digite um comentário, por favor!')
   }
 
-  function deleteComment(commentToDelete) {
+  function deleteComment(commentToDelete: string) {
     const commentsWithoutDeletedOne = comments.filter(comment => {
       return comment !== commentToDelete
     })
@@ -46,9 +68,7 @@ export function Post({ post }) {
     setComments(commentsWithoutDeletedOne)
   }
 
-  function isNewCommentEmpty() {
-    return newCommentText.length === 0
-  }
+  const isNewCommentEmpty = newCommentText.length === 0;
 
   return (
     <article className="post">
